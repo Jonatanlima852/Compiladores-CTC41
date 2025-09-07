@@ -63,17 +63,19 @@ make rundiff
 ./compLabProf.bash
 ```
 
-## 📚 Documentação Detalhada
+## 📚 Documentação Completa
 
-A documentação completa está organizada na pasta `DOCUMENTACAO/`:
+**📖 [README-COMPILADOR.md](README-COMPILADOR.md)** - Guia completo e enxuto com seções colapsáveis
 
-- **[01-ambiente-windows.md](DOCUMENTACAO/01-ambiente-windows.md)** - Configuração específica para Windows
-- **[02-compilacao.md](DOCUMENTACAO/02-compilacao.md)** - Guia completo de compilação
-- **[03-testes.md](DOCUMENTACAO/03-testes.md)** - Execução e interpretação de testes
-- **[04-desenvolvimento.md](DOCUMENTACAO/04-desenvolvimento.md)** - Desenvolvimento e estrutura do código
-- **[05-linguagem-cminus.md](DOCUMENTACAO/05-linguagem-cminus.md)** - Especificação da linguagem C-
-- **[06-ferramentas.md](DOCUMENTACAO/06-ferramentas.md)** - Ferramentas utilizadas (Flex, Bison, CMake, etc.)
-- **[07-exemplos.md](DOCUMENTACAO/07-exemplos.md)** - Exemplos práticos e casos de uso
+Este guia único contém toda a documentação necessária:
+- ⚙️ Configuração do ambiente WSL/Ubuntu
+- 📝 Especificação da linguagem C-
+- 🔤 **Fase 1**: Analisador Léxico
+- 🌳 **Fase 2**: Analisador Sintático  
+- 🔍 **Fase 3**: Analisador Semântico
+- ⚙️ **Fase 4**: Geração de Código
+- 🧪 Sistema completo de testes
+- 🚨 Troubleshooting e soluções
 
 ## 🛠️ Pré-requisitos
 
