@@ -8,6 +8,11 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
+
+// JONATAN: adicionei a função printLine no header
+/* Procedure printLine prints the current line */
+void printLine(FILE *);
+
 /* Procedure printToken prints a token 
  * and its lexeme to the listing file
  */

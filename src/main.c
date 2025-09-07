@@ -36,6 +36,9 @@ FILE * source;
 FILE * listing;
 FILE * code;
 
+// JONATAN: declarando o ponteiro redundant_source
+FILE * redundant_source;
+
 /* allocate and set tracing flags */
 int EchoSource = TRUE;
 int TraceScan = TRUE;
@@ -58,7 +61,11 @@ int main( int argc, char * argv[] )
     if (strchr (pgm, '.') == NULL)
         strcat(pgm,".cm");// if no extension is given, append .cm (c minus) to the filename
     source = fopen(pgm,"r");
-    //redundant_source = fopen(pgm, "r"); <- use redundant_source to print whole lines in lex output
+
+    // JONATAN: adicionado redundant_source para imprimir linhas completas (apenas descomentei)
+    redundant_source = fopen(pgm, "r"); // <- use redundant_source to print whole lines in lex output
+
+
     if (source==NULL)
     { fprintf(stderr,"File %s not found\n",pgm);
         exit(1);

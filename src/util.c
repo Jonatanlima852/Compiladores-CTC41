@@ -9,6 +9,21 @@
 #include "globals.h"
 #include "util.h"
 
+
+
+//JONATAN: adicionando função printLine:
+void printLine(FILE *redundant_source) { 
+  char line[1024]; 
+  char *ret = fgets(line, 1024, redundant_source); 
+  if (ret) { 
+      pc("%d: %-1s", lineno, line); 
+      if (feof(redundant_source)) 
+          pc("\n"); 
+  } 
+}
+
+
+// JONATAN: atualizando função printToken com todos os tokens
 /* Procedure printToken prints a token 
  * and its lexeme to the listing file
  */
@@ -22,15 +37,29 @@ void printToken( TokenType token, const char* tokenString )
     case UNTIL:
     case READ:
     case WRITE:
+    case INT:
+    case VOID:
+    case RETURN:
+    case WHILE:   // JONATAN: adicionados os tokens INT, VOID, RETURN, WHILE
       pc(
          "reserved word: %s\n",tokenString);
       break;
     case ASSIGN: pc(":=\n"); break;
+    case ASSIGN_SIMPLE: pc("=\n"); break; // JONATAN: adicionei para =
     case LT: pc("<\n"); break;
-    case EQ: pc("=\n"); break;
+    case LE: pc("<=\n"); break; // JONATAN: adicionados os tokens LE, GT, GE
+    case GT: pc(">\n"); break;
+    case GE: pc(">=\n"); break;
+    case EQ: pc("==\n"); break;  // JONATAN: mudei de = para ==
+    case NE: pc("!=\n"); break; // JONATAN: adicionados os tokens NE
     case LPAREN: pc("(\n"); break;
     case RPAREN: pc(")\n"); break;
+    case LBRACKET: pc("[\n"); break;    // JONATAN: adicionados os tokens LBRACKET, RBRACKET, LBRACE, RBRACE
+    case RBRACKET: pc("]\n"); break;
+    case LBRACE: pc("{\n"); break;
+    case RBRACE: pc("}\n"); break;
     case SEMI: pc(";\n"); break;
+    case COMMA: pc(",\n"); break; // JONATAN: adicionados os tokens COMMA
     case PLUS: pc("+\n"); break;
     case MINUS: pc("-\n"); break;
     case TIMES: pc("*\n"); break;

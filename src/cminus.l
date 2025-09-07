@@ -32,28 +32,43 @@ whitespace  [ \t]+
 "until"         {return UNTIL;}
 "read"          {return READ;}
 "write"         {return WRITE;}
+"int"           {return INT;}           // JONATAN: adicionei token faltante
+"void"          {return VOID;}          // JONATAN: adicionei token faltante
+"return"        {return RETURN;}        // JONATAN: adicionei token faltante
+"while"         {return WHILE;}         // JONATAN: adicionei token faltante
 ":="            {return ASSIGN;}
-"="             {return EQ;}
+"=="            {return EQ;}            // JONATAN: adicionei token que faltava
+"="             {return ASSIGN_SIMPLE;} // JONATAN: mudei para ASSIGN_SIMPLE
 "<"             {return LT;}
+"<="            {return LE;}            // JONATAN: adicionei token faltante
+">"             {return GT;}            // JONATAN: adicionei token faltante
+">="            {return GE;}            // JONATAN: adicionei token faltante
+"!="            {return NE;}            // JONATAN: adicionei token faltante
 "+"             {return PLUS;}
 "-"             {return MINUS;}
 "*"             {return TIMES;}
 "/"             {return OVER;}
 "("             {return LPAREN;}
 ")"             {return RPAREN;}
+"["             {return LBRACKET;}      // JONATAN: adicionei token que faltava
+"]"             {return RBRACKET;}      // JONATAN: adicionei token que faltava
+"{"             {return LBRACE;}        // JONATAN: corrigi pois estava dando problema
+"}"             {return RBRACE;}        // JONATAN: adicionei token que faltava
 ";"             {return SEMI;}
+","             {return COMMA;}         // JONATAN: adicionei token que faltava
 {number}        {return NUM;}
 {identifier}    {return ID;}
-{newline}       {lineno++;}
+{newline}       {lineno++; printLine(redundant_source);}  // JONATAN: adicionei printLine
 {whitespace}    {/* skip whitespace */}
-"{"             { char c;
-                  do
-                  { c = input();
-                    if (c == EOF) break;
-                    if (c == '\n') lineno++;
-                  } while (c != '}');
+"/*"            {                       // JONATAN: corrigindo forma que são analisados os comentarios
+                  char c, prev = 0;
+                  while ((c = input()) != EOF) {
+                    if (prev == '*' && c == '/') break;
+                    if (c == '\n') { lineno++; printLine(redundant_source); }
+                    prev = c;
+                  }
                 }
-.               {return ERROR;}
+[^a-zA-Z0-9 \t\n\r{}();,=<>!+\-*/\[\]] {return ERROR;}
 %%
 TokenType getToken(void)
 { static int firstTime = TRUE;
@@ -63,6 +78,7 @@ TokenType getToken(void)
     lineno++;
     yyin = source;
     yyout = listing;
+    printLine(redundant_source);    // JONATAN: adicionei para printar a linha nova
   }
   currentToken = yylex();
   strncpy(tokenString,yytext,MAXTOKENLEN);

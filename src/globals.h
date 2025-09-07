@@ -31,11 +31,20 @@ typedef enum
    {ENDFILE,ERROR,
     /* reserved words */
     IF,THEN,ELSE,END,REPEAT,UNTIL,READ,WRITE,
+    // JONATAN: palavras reservadas adicionadas
+    INT,VOID,RETURN,WHILE,
     /* multicharacter tokens */
     ID,NUM,
     /* special symbols */
-    ASSIGN,EQ,LT,PLUS,MINUS,TIMES,OVER,LPAREN,RPAREN,SEMI
+    ASSIGN,ASSIGN_SIMPLE,EQ,LT,PLUS,MINUS,TIMES,OVER,LPAREN,RPAREN,SEMI,
+    // JONATAN: simbolos especiais adicionados 
+    LE,GT,GE,NE,COMMA,LBRACKET,RBRACKET,LBRACE,RBRACE
    } TokenType;
+
+ // JONATAN: variavel global adicionada para imprimir linhas completas
+extern FILE* redundant_source;
+
+
 
 extern FILE* source; /* source code text file */
 extern FILE* listing; /* listing output text file */
