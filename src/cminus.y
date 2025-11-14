@@ -42,29 +42,29 @@ static TreeNode * appendToList(TreeNode * list, TreeNode * newItem) {
 %left PLUS MINUS
 %left TIMES OVER
 
-%% /* Grammar for C- */
+%% /* Gramática para C- */
 
-program     : declaration-list
+programa     : lista_declaracoes
                  { savedTree = $1;} 
             ;
 
-declaration-list : declaration-list declaration
+lista_declaracoes : lista_declaracoes declaracao
                  { $$ = appendToList($1, $2); }
-                 | declaration { $$ = $1; }
+                 | declaracao { $$ = $1; }
                  ;
 
-declaration : var-declaration { $$ = $1; }
-            | fun-declaration { $$ = $1; }
+declaracao : var_declaracao { $$ = $1; }
+            | fun_declaracao { $$ = $1; }
             ;
 
-var-declaration : type-specifier ID SEMI
+var_declaracao : tipo_especificador ID SEMI
                  { TreeNode * typeNode = $1;
                    $$ = newDeclNode(VarDeclK);
                    $$->attr.name = copyString(tokenString);
                    $$->type = (typeNode && typeNode->attr.name && strcmp(typeNode->attr.name, "void") == 0) ? Void : Integer;
                    $$->child[0] = typeNode;
                  }
-                 | type-specifier array-name LBRACKET NUM RBRACKET SEMI
+                 | tipo_especificador nome_identificador LBRACKET NUM RBRACKET SEMI
                  { TreeNode * typeNode = $1;
                    $$ = newDeclNode(VarDeclK);
                    $$->attr.name = (char *)$2;
@@ -75,14 +75,14 @@ var-declaration : type-specifier ID SEMI
                  }
                  ;
 
-array-name : ID { $$ = (TreeNode *)copyString(tokenString); }
-            ;
+nome_identificador : ID { $$ = (TreeNode *)copyString(tokenString); }
+                   ;
 
-type-specifier : INT { $$ = newExpNode(IdK); $$->attr.name = "int"; }
+tipo_especificador : INT { $$ = newExpNode(IdK); $$->attr.name = "int"; }
                | VOID { $$ = newExpNode(IdK); $$->attr.name = "void"; }
                ;
 
-fun-declaration : type-specifier function-name LPAREN params RPAREN compound-stmt
+fun_declaracao : tipo_especificador nome_identificador LPAREN parametros RPAREN composto_decl
                  { $$ = newDeclNode(FunDeclK);
                    $$->attr.name = (char *)$2;
                    $$->type = ($1 && $1->attr.name && strcmp($1->attr.name, "void") == 0) ? Void : Integer;
@@ -92,26 +92,22 @@ fun-declaration : type-specifier function-name LPAREN params RPAREN compound-stm
                  }
                  ;
 
-function-name : ID { $$ = (TreeNode *)copyString(tokenString); }
-               ;
+parametros : lista_parametros { $$ = $1; }
+           | VOID { $$ = NULL; }
+           ;
 
-params : param-list { $$ = $1; }
-       | VOID { $$ = NULL; }
-       | /* empty */ { $$ = NULL; }
-       ;
-
-param-list : param-list COMMA param
+lista_parametros : lista_parametros COMMA parametro
             { $$ = appendToList($1, $3); }
-            | param { $$ = $1; }
+            | parametro { $$ = $1; }
             ;
 
-param : type-specifier ID
+parametro : tipo_especificador ID
        { $$ = newDeclNode(ParamK);
          $$->attr.name = copyString(tokenString);
          $$->type = ($1 && $1->attr.name && strcmp($1->attr.name, "void") == 0) ? Void : Integer;
          $$->child[0] = $1;
        }
-       | type-specifier ID LBRACKET RBRACKET
+       | tipo_especificador ID LBRACKET RBRACKET
        { $$ = newDeclNode(ParamArrayK);
          $$->attr.name = copyString(tokenString);
          $$->type = ($1 && $1->attr.name && strcmp($1->attr.name, "void") == 0) ? Void : Integer;
@@ -119,41 +115,42 @@ param : type-specifier ID
        }
        ;
 
-compound-stmt : LBRACE local-declarations statement-list RBRACE
+composto_decl : LBRACE local_declaracoes lista_comandos RBRACE
                { $$ = newStmtNode(CompoundK);
                  $$->child[0] = $2;
                  $$->child[1] = $3;
                }
                ;
 
-local-declarations : local-declarations var-declaration
+local_declaracoes : local_declaracoes var_declaracao
                     { $$ = appendToList($1, $2); }
                     | /* empty */ { $$ = NULL; }
                     ;
 
-statement-list : statement-list statement
+lista_comandos : lista_comandos comando
                 { $$ = appendToList($1, $2); }
                 | /* empty */ { $$ = NULL; }
                 ;
 
-statement : expression-stmt { $$ = $1; }
-          | compound-stmt { $$ = $1; }
-          | selection-stmt { $$ = $1; }
-          | iteration-stmt { $$ = $1; }
-          | return-stmt { $$ = $1; }
+comando : expressao_decl { $$ = $1; }
+          | composto_decl { $$ = $1; }
+          | selecao_decl { $$ = $1; }
+          | iteracao_decl { $$ = $1; }
+          | retorno_decl { $$ = $1; }
+          | var_declaracao { $$ = $1; }
           ;
 
-expression-stmt : expression SEMI
+expressao_decl : expressao SEMI
                  { $$ = $1; }
                  | SEMI { $$ = NULL; }
                  ;
 
-selection-stmt : IF LPAREN expression RPAREN statement
+selecao_decl : IF LPAREN expressao RPAREN comando
                 { $$ = newStmtNode(IfK);
                   $$->child[0] = $3;
                   $$->child[1] = $5;
                 }
-                | IF LPAREN expression RPAREN statement ELSE statement
+                | IF LPAREN expressao RPAREN comando ELSE comando
                 { $$ = newStmtNode(IfK);
                   $$->child[0] = $3;
                   $$->child[1] = $5;
@@ -161,121 +158,119 @@ selection-stmt : IF LPAREN expression RPAREN statement
                 }
                 ;
 
-iteration-stmt : WHILE LPAREN expression RPAREN statement
+iteracao_decl : WHILE LPAREN expressao RPAREN comando
                 { $$ = newStmtNode(WhileK);
                   $$->child[0] = $3;
                   $$->child[1] = $5;
                 }
                 ;
 
-return-stmt : RETURN SEMI
+retorno_decl : RETURN SEMI
              { $$ = newStmtNode(ReturnK); }
-             | RETURN expression SEMI
+             | RETURN expressao SEMI
              { $$ = newStmtNode(ReturnK);
                $$->child[0] = $2;
              }
              ;
 
-expression : var ASSIGN_SIMPLE expression
+expressao : variavel ASSIGN_SIMPLE expressao
             { $$ = newStmtNode(AssignK);
               $$->child[0] = $1;
               $$->child[1] = $3;
               $$->attr.name = $1->attr.name;
             }
-            | simple-expression { $$ = $1; }
+            | simples_expressao { $$ = $1; }
             ;
 
-var : ID { $$ = newExpNode(IdK);
-           $$->attr.name = copyString(tokenString);
+variavel : nome_identificador
+         { $$ = newExpNode(IdK);
+           $$->attr.name = (char *)$1;
          }
-         | array-access LBRACKET expression RBRACKET
+         | nome_identificador LBRACKET expressao RBRACKET
          { $$ = newExpNode(IdK);
            $$->attr.name = (char *)$1;
            $$->child[0] = $3;
          }
          ;
 
-array-access : ID { $$ = (TreeNode *)copyString(tokenString); }
-              ;
-
-simple-expression : additive-expression LT additive-expression
+simples_expressao : soma_expressao LT soma_expressao
                     { $$ = newExpNode(OpK);
                       $$->child[0] = $1;
                       $$->child[1] = $3;
                       $$->attr.op = LT;
                     }
-                    | additive-expression LE additive-expression
+                    | soma_expressao LE soma_expressao
                     { $$ = newExpNode(OpK);
                       $$->child[0] = $1;
                       $$->child[1] = $3;
                       $$->attr.op = LE;
                     }
-                    | additive-expression GT additive-expression
+                    | soma_expressao GT soma_expressao
                     { $$ = newExpNode(OpK);
                       $$->child[0] = $1;
                       $$->child[1] = $3;
                       $$->attr.op = GT;
                     }
-                    | additive-expression GE additive-expression
+                    | soma_expressao GE soma_expressao
                     { $$ = newExpNode(OpK);
                       $$->child[0] = $1;
                       $$->child[1] = $3;
                       $$->attr.op = GE;
                     }
-                    | additive-expression EQ additive-expression
+                    | soma_expressao EQ soma_expressao
                     { $$ = newExpNode(OpK);
                       $$->child[0] = $1;
                       $$->child[1] = $3;
                       $$->attr.op = EQ;
                     }
-                    | additive-expression NE additive-expression
+                    | soma_expressao NE soma_expressao
                     { $$ = newExpNode(OpK);
                       $$->child[0] = $1;
                       $$->child[1] = $3;
                       $$->attr.op = NE;
                     }
-                    | additive-expression { $$ = $1; }
+                    | soma_expressao { $$ = $1; }
                     ;
 
-additive-expression : additive-expression PLUS term
+soma_expressao : soma_expressao PLUS termo
                      { $$ = newExpNode(OpK);
                        $$->child[0] = $1;
                        $$->child[1] = $3;
                        $$->attr.op = PLUS;
                      }
-                     | additive-expression MINUS term
+                     | soma_expressao MINUS termo
                      { $$ = newExpNode(OpK);
                        $$->child[0] = $1;
                        $$->child[1] = $3;
                        $$->attr.op = MINUS;
                      }
-                     | term { $$ = $1; }
+                     | termo { $$ = $1; }
                      ;
 
-term : term TIMES factor
+termo : termo TIMES fator
       { $$ = newExpNode(OpK);
         $$->child[0] = $1;
         $$->child[1] = $3;
         $$->attr.op = TIMES;
       }
-      | term OVER factor
+      | termo OVER fator
       { $$ = newExpNode(OpK);
         $$->child[0] = $1;
         $$->child[1] = $3;
         $$->attr.op = OVER;
       }
-      | factor { $$ = $1; }
+      | fator { $$ = $1; }
       ;
 
-factor : LPAREN expression RPAREN
+fator : LPAREN expressao RPAREN
         { $$ = $2; }
-        | var { $$ = $1; }
-        | call { $$ = $1; }
+        | variavel { $$ = $1; }
+        | ativacao { $$ = $1; }
         | NUM
         { $$ = newExpNode(ConstK);
           $$->attr.val = atoi(tokenString);
         }
-        | MINUS factor
+        | MINUS fator
         { $$ = newExpNode(OpK);
           $$->attr.op = MINUS;
           $$->child[0] = newExpNode(ConstK);
@@ -284,23 +279,20 @@ factor : LPAREN expression RPAREN
         }
         ;
 
-call : function-call LPAREN args RPAREN
+ativacao : nome_identificador LPAREN argumentos RPAREN
       { $$ = newExpNode(CallK);
         $$->attr.name = (char *)$1;
         $$->child[0] = $3;
       }
       ;
 
-function-call : ID { $$ = (TreeNode *)copyString(tokenString); }
-               ;
-
-args : arg-list { $$ = $1; }
+argumentos : lista_argumentos { $$ = $1; }
      | /* empty */ { $$ = NULL; }
      ;
 
-arg-list : arg-list COMMA expression
+lista_argumentos : lista_argumentos COMMA expressao
           { $$ = appendToList($1, $3); }
-          | expression { $$ = $1; }
+          | expressao { $$ = $1; }
           ;
 
 %%
