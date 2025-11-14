@@ -6,11 +6,13 @@
 /****************************************************/
 
 #include "globals.h"
+#include "log.h"
+#include <string.h>
 
 /* set NO_PARSE to TRUE to get a scanner-only compiler */
-#define NO_PARSE TRUE
+#define NO_PARSE FALSE
 /* set NO_ANALYZE to TRUE to get a parser-only compiler */
-#define NO_ANALYZE FALSE
+#define NO_ANALYZE TRUE
 
 /* set NO_CODE to TRUE to get a compiler that does not
  * generate code
@@ -39,10 +41,13 @@ FILE * code;
 // JONATAN: declarando o ponteiro redundant_source
 FILE * redundant_source;
 
+// JONATAN: declarando a variável para armazenar o nome da função atual
+char * currentFunctionName = NULL;
+
 /* allocate and set tracing flags */
 int EchoSource = TRUE;
 int TraceScan = TRUE;
-int TraceParse = FALSE;
+int TraceParse = TRUE;
 int TraceAnalyze = FALSE;
 int TraceCode = FALSE;
 
@@ -78,17 +83,21 @@ int main( int argc, char * argv[] )
     //// end opening sources ////
     
     listing = stdout; /* send messages from main() to screen */
-    initializePrinter(detailpath, pgm, LER);// init logger in /lib/log.c
+    initializePrinter(detailpath, pgm, UP2SYN);// init logger in /lib/log.c
     // for the lexical analysis, you might change LOGALL to LER, to generate only lex and err outputs.
       
   fprintf(listing,"\nTINY COMPILATION: %s\n",pgm);
 #if NO_PARSE
   while (getToken()!=ENDFILE);
 #else
+  doneLEXstartSYN(); // transition from lexical to syntactic analysis
   syntaxTree = parse();
+  if (syntaxTree != NULL) {
+    printTree(syntaxTree); // Print syntax tree to SYN file
+  }
   if (TraceParse) {
     fprintf(listing,"\nSyntax tree:\n");
-    printTree(syntaxTree);
+    // printTree(syntaxTree); // Removed - tree is printed by logging system
   }
 #if !NO_ANALYZE
   if (! Error)

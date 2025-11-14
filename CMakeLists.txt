@@ -79,6 +79,14 @@ add_custom_target(rundiff ALL
   USES_TERMINAL
 )
 
+add_custom_target(syndiff 
+  COMMENT "running syn diff" 
+  COMMAND ../scripts/runSYNdiff 
+  DEPENDS runmycmcomp 
+  VERBATIM 
+  USES_TERMINAL 
+)
+
 add_custom_target(ddiff 
   COMMENT "running detail diff"
   COMMAND ../scripts/rundetaildiff

@@ -13,9 +13,18 @@
 %{
 #include "globals.h"
 #include "util.h"
+#include "parser.h"
 #include "scan.h"
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
+
+static void setTokenString(const char *text)
+{
+  size_t len = strlen(text);
+  if (len > MAXTOKENLEN) len = MAXTOKENLEN;
+  memcpy(tokenString, text, len);
+  tokenString[len] = '\0';
+}
 %}
 digit       [0-9]
 number      {digit}+
@@ -24,51 +33,54 @@ identifier  {letter}+
 newline     \n
 whitespace  [ \t]+
 %%
-"if"            {return IF;}
-"then"          {return THEN;}
-"else"          {return ELSE;}
-"end"           {return END;}
-"repeat"        {return REPEAT;}
-"until"         {return UNTIL;}
-"read"          {return READ;}
-"write"         {return WRITE;}
-"int"           {return INT;}           // JONATAN: adicionei token faltante
-"void"          {return VOID;}          // JONATAN: adicionei token faltante
-"return"        {return RETURN;}        // JONATAN: adicionei token faltante
-"while"         {return WHILE;}         // JONATAN: adicionei token faltante
+"if"            {setTokenString(yytext); return IF;}
+"then"          {setTokenString(yytext); return THEN;}
+"else"          {setTokenString(yytext); return ELSE;}
+"end"           {setTokenString(yytext); return END;}
+"repeat"        {setTokenString(yytext); return REPEAT;}
+"until"         {setTokenString(yytext); return UNTIL;}
+"read"          {setTokenString(yytext); return READ;}
+"write"         {setTokenString(yytext); return WRITE;}
+"int"           {setTokenString(yytext); return INT;}
+"void"          {setTokenString(yytext); return VOID;}
+"return"        {setTokenString(yytext); return RETURN;}
+"while"         {setTokenString(yytext); return WHILE;}
 ":="            {return ASSIGN;}
-"=="            {return EQ;}            // JONATAN: adicionei token que faltava
-"="             {return ASSIGN_SIMPLE;} // JONATAN: mudei para ASSIGN_SIMPLE
+"=="            {return EQ;}
+"="             {return ASSIGN_SIMPLE;}
 "<"             {return LT;}
-"<="            {return LE;}            // JONATAN: adicionei token faltante
-">"             {return GT;}            // JONATAN: adicionei token faltante
-">="            {return GE;}            // JONATAN: adicionei token faltante
-"!="            {return NE;}            // JONATAN: adicionei token faltante
+"<="            {return LE;}
+">"             {return GT;}
+">="            {return GE;}
+"!="            {return NE;}
 "+"             {return PLUS;}
 "-"             {return MINUS;}
 "*"             {return TIMES;}
 "/"             {return OVER;}
 "("             {return LPAREN;}
 ")"             {return RPAREN;}
-"["             {return LBRACKET;}      // JONATAN: adicionei token que faltava
-"]"             {return RBRACKET;}      // JONATAN: adicionei token que faltava
-"{"             {return LBRACE;}        // JONATAN: corrigi pois estava dando problema
-"}"             {return RBRACE;}        // JONATAN: adicionei token que faltava
+"["             {return LBRACKET;}
+"]"             {return RBRACKET;}
+"{"             {return LBRACE;}
+"}"             {return RBRACE;}
 ";"             {return SEMI;}
-","             {return COMMA;}         // JONATAN: adicionei token que faltava
-{number}        {return NUM;}
-{identifier}    {return ID;}
-{newline}       {lineno++; printLine(redundant_source);}  // JONATAN: adicionei printLine
+","             {return COMMA;}
+{number}        {setTokenString(yytext); return NUM;}
+{identifier}    {setTokenString(yytext); 
+                 if (currentFunctionName) free(currentFunctionName);
+                 currentFunctionName = copyString(yytext);
+                 return ID;}
+{newline}       {lineno++; printLineLEX(redundant_source);}
 {whitespace}    {/* skip whitespace */}
-"/*"            {                       // JONATAN: corrigindo forma que são analisados os comentarios
+"/*"            {
                   char c, prev = 0;
                   while ((c = input()) != EOF) {
                     if (prev == '*' && c == '/') break;
-                    if (c == '\n') { lineno++; printLine(redundant_source); }
+                    if (c == '\n') { lineno++; printLineLEX(redundant_source); }
                     prev = c;
                   }
                 }
-[^a-zA-Z0-9 \t\n\r{}();,=<>!+\-*/\[\]] {return ERROR;}
+[^a-zA-Z0-9 \t\n\r{}();,=<>!+\-*/\[\]] {setTokenString(yytext); return ERROR;}
 %%
 TokenType getToken(void)
 { static int firstTime = TRUE;
@@ -78,13 +90,12 @@ TokenType getToken(void)
     lineno++;
     yyin = source;
     yyout = listing;
-    printLine(redundant_source);    // JONATAN: adicionei para printar a linha nova
+    printLineLEX(redundant_source);
   }
   currentToken = yylex();
-  strncpy(tokenString,yytext,MAXTOKENLEN);
   if (TraceScan) {
-    pc("\t%d: ",lineno);
-    printToken(currentToken,tokenString);
+    pp(LEX, "\t%d: ",lineno);
+    printTokenLEX(currentToken,tokenString);
   }
   return currentToken;
 }

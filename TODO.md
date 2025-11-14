@@ -1,0 +1,6 @@
+- Erro 
+- Aceitar a declaração intercalada, trocar na linha 122 no “cminus.y"
+- Não é para ter o erro correto, é simplesmente para acertar
+- Problema bloco 3 - linha 278 CMINUS.y factor pode ser melhorado introduzindo um operador unario, tem que ver como fazer no assembly para ter operação 
+- É preferível se todo nó de chave for igual, seja while if outro, 
+- Usar sufixos no escopo, _w1_f1…na tabela que será gerada próx lab

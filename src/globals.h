@@ -28,21 +28,14 @@
 
 typedef enum 
     /* book-keeping tokens */
-   {ENDFILE,ERROR,
-    /* reserved words */
-    IF,THEN,ELSE,END,REPEAT,UNTIL,READ,WRITE,
-    // JONATAN: palavras reservadas adicionadas
-    INT,VOID,RETURN,WHILE,
-    /* multicharacter tokens */
-    ID,NUM,
-    /* special symbols */
-    ASSIGN,ASSIGN_SIMPLE,EQ,LT,PLUS,MINUS,TIMES,OVER,LPAREN,RPAREN,SEMI,
-    // JONATAN: simbolos especiais adicionados 
-    LE,GT,GE,NE,COMMA,LBRACKET,RBRACKET,LBRACE,RBRACE
+   {ENDFILE
    } TokenType;
 
  // JONATAN: variavel global adicionada para imprimir linhas completas
 extern FILE* redundant_source;
+
+// JONATAN: variavel global para armazenar o nome da função atual
+extern char* currentFunctionName;
 
 
 
@@ -56,9 +49,10 @@ extern int lineno; /* source line number for listing */
 /***********   Syntax tree for parsing ************/
 /**************************************************/
 
-typedef enum {StmtK,ExpK} NodeKind;
-typedef enum {IfK,RepeatK,AssignK,ReadK,WriteK} StmtKind;
-typedef enum {OpK,ConstK,IdK} ExpKind;
+typedef enum {StmtK,ExpK,DeclK} NodeKind;
+typedef enum {IfK,RepeatK,AssignK,ReadK,WriteK,WhileK,ReturnK,CompoundK} StmtKind;
+typedef enum {OpK,ConstK,IdK,CallK} ExpKind;
+typedef enum {VarDeclK,FunDeclK,ParamK,ParamArrayK} DeclKind;
 
 /* ExpType is used for type checking */
 typedef enum {Void,Integer,Boolean} ExpType;
@@ -70,7 +64,7 @@ typedef struct treeNode
      struct treeNode * sibling;
      int lineno;
      NodeKind nodekind;
-     union { StmtKind stmt; ExpKind exp;} kind;
+     union { StmtKind stmt; ExpKind exp; DeclKind decl;} kind;
      union { TokenType op;
              int val;
              char * name; } attr;
